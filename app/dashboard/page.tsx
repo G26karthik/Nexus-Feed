@@ -32,7 +32,13 @@ export default function DashboardPage() {
   useEffect(() => {
     fetch("/api/digest/today")
       .then((r) => {
-        if (!r.ok) throw new Error("Failed to load");
+        if (!r.ok) {
+          if (r.status === 401) {
+            window.location.href = "/login";
+            return;
+          }
+          throw new Error("Failed to load");
+        }
         return r.json();
       })
       .then((d) => {
