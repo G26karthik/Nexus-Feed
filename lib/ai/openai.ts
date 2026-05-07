@@ -47,7 +47,7 @@ export async function generateTrendingTopics(): Promise<string[]> {
         },
         {
           role: "user",
-          content: `Today is ${today}. Generate 12 broad, diverse topic categories that someone might want to follow. Mix serious topics (geopolitics, finance, science, health) with lifestyle topics (travel, food, sports, culture). Make them feel like natural human interests, not news categories.\n\nReturn exactly this format:\n{ "topics": ["Topic1", "Topic2", ...] }\n\nReturn only the JSON. No explanation.`,
+          content: `Today is ${today}. Generate 10 globally trending topics right now (simulate what's trending on Google Trends, X, or LinkedIn today). Mix highly relevant current events (tech, geopolitics, markets) with general global interests. Make them specific enough to be interesting, but broad enough to have sub-topics.\n\nReturn exactly this format:\n{ "topics": ["Trending Topic 1", "Trending Topic 2", ...] }\n\nReturn only the JSON. No explanation.`,
         },
       ],
       temperature: 0.8,
@@ -101,7 +101,7 @@ export async function expandTopic(
         },
         {
           role: "user",
-          content: `Given the interest topic "${topic}" (which sits at path: "${breadcrumb}"), generate 6-8 specific sub-topics a person might care about. Go specific enough to be genuinely useful. If depth > 3, make sub-topics very specific and concrete (e.g. not "travel" but "budget backpacking in Vietnam"). Current depth: ${depth}.\n\nReturn:\n{ "subTopics": ["SubTopic1", "SubTopic2", ...] }\n\nReturn only the JSON. No explanation.`,
+          content: `Given the interest topic "${topic}" (which sits at path: "${breadcrumb}"), generate 6-8 correlated, related sub-topics or trending angles that a person might want to explore further. Go specific enough to be genuinely useful. If it's a broad topic, break it down into its most interesting current components or related fields. Current depth: ${depth}.\n\nReturn:\n{ "subTopics": ["Correlated Topic 1", "Correlated Topic 2", ...] }\n\nReturn only the JSON. No explanation.`,
         },
       ],
       temperature: 0.7,

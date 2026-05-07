@@ -111,18 +111,61 @@ export default function OnboardingPage() {
   };
 
   // Add custom topic
-  const addCustomTopic = () => {
-    if (!customTopic.trim()) return;
+  const addCustomTopic = async () => {
+    const topicLabel = customTopic.trim();
+    if (!topicLabel) return;
+    
     const newNode: TreeNode = {
-      label: customTopic.trim(),
-      breadcrumb: customTopic.trim(),
+      label: topicLabel,
+      breadcrumb: topicLabel,
       depth: 0,
       children: null,
-      isExpanding: false,
+      isExpanding: true,
       isSelected: false,
     };
-    setTopics([newNode, ...topics]);
+    
+    setTopics((prev) => [newNode, ...prev]);
     setCustomTopic("");
+
+    try {
+      const res = await fetch("/api/topics/expand", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          topic: topicLabel,
+          breadcrumb: topicLabel,
+          depth: 1,
+        }),
+      });
+      const data = await res.json();
+      
+      setTopics((prev) => {
+        const updated = JSON.parse(JSON.stringify(prev));
+        const node = updated.find((n: TreeNode) => n.breadcrumb === topicLabel);
+        if (node) {
+          node.children = (data.subTopics || []).map((st: string) => ({
+            label: st,
+            breadcrumb: `${topicLabel} > ${st}`,
+            depth: 1,
+            children: null,
+            isExpanding: false,
+            isSelected: false,
+          }));
+          node.isExpanding = false;
+        }
+        return updated;
+      });
+    } catch {
+      setTopics((prev) => {
+        const updated = JSON.parse(JSON.stringify(prev));
+        const node = updated.find((n: TreeNode) => n.breadcrumb === topicLabel);
+        if (node) {
+          node.children = [];
+          node.isExpanding = false;
+        }
+        return updated;
+      });
+    }
   };
 
   // Collect selected nodes
