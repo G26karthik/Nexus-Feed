@@ -1,36 +1,135 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Nexus Feed
+
+**Your interests. Infinitely deep. Your digest. Crystal clear.**
+
+Nexus Feed is a personalized AI-powered daily digest application. Define what you care about through an AI-generated infinite drill-down taxonomy, and receive a clean daily digest of the most important developments — no noise, no algorithms, just signal.
+
+![Nexus Feed Landing Page](docs/landing.png)
+
+## Features
+
+- **AI-Generated Interest Taxonomy** — Start with broad topics, drill infinitely deep into sub-topics. "Technology → AI → Generative AI → Open Source Models" — go as specific as you want.
+- **Daily Digest Generation** — Every day, the system searches the web for your interests using Tavily, then summarizes the top developments using GPT-4o.
+- **Real Source Links** — Every digest item links back to the original article from real publications (CNN, Reuters, Bloomberg, etc.)
+- **Clean, Zero-Noise UI** — Apple-inspired dark theme with glassmorphism, smooth animations, and premium typography.
+- **Simple Auth** — Username/password signup. No OAuth complexity.
+- **Local-First** — Runs on local SQLite by default. No cloud database needed for development.
+
+## Tech Stack
+
+| Layer | Technology |
+|---|---|
+| **Framework** | Next.js 16 (App Router, Turbopack) |
+| **Auth** | Custom session management (SHA-256 token hashing, secure cookies) |
+| **Database** | SQLite (local via libSQL) / Turso (production) |
+| **ORM** | Drizzle ORM |
+| **AI Models** | OpenAI GPT-4o-mini (fast ops) + GPT-4o (summarization) |
+| **Web Search** | Tavily API (optional — GPT fallback if not configured) |
+| **Styling** | Vanilla CSS with Apple-inspired design system |
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
+
+- Node.js 18+
+- OpenAI API key ([get one here](https://platform.openai.com/api-keys))
+- Tavily API key (optional, [get one here](https://tavily.com)) — enables real-time web search for digests
+
+### Installation
 
 ```bash
+# Clone the repository
+git clone https://github.com/G26karthik/Nexus-Feed.git
+cd Nexus-Feed/nexus-feed
+
+# Install dependencies
+npm install
+
+# Set up environment variables
+cp .env.example .env.local
+# Edit .env.local and add your API keys
+
+# Initialize the database
+npm run db:push
+
+# Start the development server
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) to see the app.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Environment Variables
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Variable | Required | Description |
+|---|---|---|
+| `OPENAI_API_KEY` | ✅ Yes | OpenAI API key for topic generation and digest summarization |
+| `TAVILY_API_KEY` | ❌ Optional | Tavily API key for real-time web search. If not set, GPT generates digests from its knowledge |
+| `TURSO_DATABASE_URL` | ❌ Optional | Defaults to `file:local.db` for local SQLite |
+| `TURSO_AUTH_TOKEN` | ❌ Optional | Only needed if using remote Turso database |
+| `CRON_SECRET` | ❌ Optional | Secret for the daily cron endpoint (for production) |
 
-## Learn More
+## Project Structure
 
-To learn more about Next.js, take a look at the following resources:
+```
+nexus-feed/
+├── app/
+│   ├── api/
+│   │   ├── auth/          # Login, signup, signout endpoints
+│   │   ├── digest/        # Daily digest generation & retrieval
+│   │   ├── interests/     # User interest CRUD
+│   │   └── topics/        # AI-powered topic trending & expansion
+│   ├── dashboard/         # Main digest view
+│   ├── interests/         # Edit interests page
+│   ├── login/             # Login/signup page
+│   ├── onboarding/        # Interest selection wizard
+│   ├── globals.css        # Design system (Apple-inspired dark theme)
+│   ├── layout.tsx         # Root layout with ambient orb lighting
+│   └── page.tsx           # Landing page
+├── lib/
+│   ├── ai/
+│   │   ├── openai.ts      # GPT integration (topics, expansion, summarization)
+│   │   ├── tavily.ts      # Web search with deduplication
+│   │   └── pipeline.ts    # Full digest generation pipeline
+│   ├── auth/
+│   │   └── session.ts     # Session management, password hashing
+│   └── db/
+│       ├── index.ts       # Database client (SQLite/Turso)
+│       └── schema.ts      # Drizzle ORM schema (5 tables)
+├── middleware.ts           # Route protection
+├── drizzle.config.ts       # Database configuration
+└── vercel.json             # Cron job configuration
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## How It Works
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+1. **Sign Up** — Create an account with a username and password
+2. **Choose Interests** — AI generates trending topics. Click to expand sub-topics infinitely deep. Select up to 10 interests.
+3. **Get Your Digest** — The system generates search queries, searches the web via Tavily, and summarizes findings using GPT-4o into a clean daily digest.
+4. **Daily Updates** — A cron job (configurable via Vercel) regenerates digests every morning at 6 AM UTC.
 
-## Deploy on Vercel
+## Available Scripts
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+| Command | Description |
+|---|---|
+| `npm run dev` | Start development server |
+| `npm run build` | Build for production |
+| `npm run start` | Start production server |
+| `npm run db:push` | Push schema to database |
+| `npm run db:generate` | Generate migration files |
+| `npm run db:studio` | Open Drizzle Studio (DB browser) |
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Deployment
+
+### Vercel (Recommended)
+
+1. Push to GitHub
+2. Import project in [Vercel](https://vercel.com)
+3. Set environment variables (`OPENAI_API_KEY`, optionally `TAVILY_API_KEY`)
+4. For production database, create a [Turso](https://turso.tech) database and set `TURSO_DATABASE_URL` + `TURSO_AUTH_TOKEN`
+5. Deploy
+
+The included `vercel.json` configures a daily cron job at 6 AM UTC for digest generation.
+
+## License
+
+MIT
