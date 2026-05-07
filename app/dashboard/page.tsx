@@ -34,7 +34,9 @@ export default function DashboardPage() {
       .then((r) => {
         if (!r.ok) {
           if (r.status === 401) {
-            window.location.href = "/login";
+            fetch("/api/auth/signout", { method: "POST" }).then(() => {
+              window.location.href = "/login";
+            });
             return;
           }
           throw new Error("Failed to load");

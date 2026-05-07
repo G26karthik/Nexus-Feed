@@ -95,7 +95,8 @@ export default function OnboardingPage() {
       
       if (!res.ok) {
         if (res.status === 401) {
-          router.push("/login");
+          await fetch("/api/auth/signout", { method: "POST" });
+          window.location.href = "/login";
           return;
         }
         const errData = await res.json().catch(() => ({}));

@@ -5,7 +5,7 @@ export async function POST() {
   const { session } = await getCurrentSession();
   if (session) {
     await invalidateSession(session.id);
-    await deleteSessionTokenCookie();
   }
+  await deleteSessionTokenCookie();
   return NextResponse.json({ success: true });
 }

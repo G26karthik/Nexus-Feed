@@ -19,7 +19,8 @@ export default function EditInterestsPage() {
       fetch("/api/interests").then(async (r) => {
         if (!r.ok) {
           if (r.status === 401) {
-            router.push("/login");
+            await fetch("/api/auth/signout", { method: "POST" });
+            window.location.href = "/login";
             throw new Error("Unauthorized");
           }
           throw new Error("Failed to load interests");
@@ -116,7 +117,8 @@ export default function EditInterestsPage() {
       
       if (!res.ok) {
         if (res.status === 401) {
-          router.push("/login");
+          await fetch("/api/auth/signout", { method: "POST" });
+          window.location.href = "/login";
           return;
         }
         const errData = await res.json().catch(() => ({}));
