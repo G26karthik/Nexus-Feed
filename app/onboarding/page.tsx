@@ -78,6 +78,7 @@ export default function OnboardingPage() {
   const handleSave = async () => {
     if (selectedInterests.length === 0) return;
     setSaving(true);
+    setErrorMsg(null);
     try {
       // Map to old expected format: [{ label, breadcrumb, depth }]
       const selections = selectedInterests.map(t => ({
@@ -85,13 +86,26 @@ export default function OnboardingPage() {
         breadcrumb: t,
         depth: 0
       }));
-      await fetch("/api/interests", {
+      
+      const res = await fetch("/api/interests", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ selections }),
       });
+      
+      if (!res.ok) {
+        if (res.status === 401) {
+          router.push("/login");
+          return;
+        }
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.error || `HTTP ${res.status} - Failed to save interests`);
+      }
+      
       router.push("/dashboard");
-    } catch {
+    } catch (err: any) {
+      console.error(err);
+      setErrorMsg(err.message || "Failed to save interests.");
       setSaving(false);
     }
   };
