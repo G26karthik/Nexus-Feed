@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { generateTrendingTopics } from "@/lib/ai/openai";
 
+export const dynamic = "force-dynamic";
+
 export async function GET() {
   try {
     const topics = await generateTrendingTopics();

@@ -58,7 +58,9 @@ export async function generateTrendingTopics(): Promise<string[]> {
     const parsed = JSON.parse(content);
     const topics = parsed.topics || [];
 
-    setCache(cacheKey, topics, 24 * 60 * 60 * 1000); // 24h
+    if (topics.length > 0) {
+      setCache(cacheKey, topics, 24 * 60 * 60 * 1000); // 24h
+    }
     return topics;
   } catch (error) {
     console.error("Failed to generate trending topics:", error);

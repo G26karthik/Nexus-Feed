@@ -33,7 +33,7 @@ export default function OnboardingPage() {
 
   // Load trending topics
   useEffect(() => {
-    fetch("/api/topics/trending")
+    fetch("/api/topics/trending", { cache: "no-store" })
       .then((r) => r.json())
       .then((data) => {
         const nodes: TreeNode[] = (data.topics || []).map((t: string) => ({
