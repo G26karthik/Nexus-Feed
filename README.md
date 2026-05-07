@@ -13,7 +13,7 @@ Nexus Feed is a personalized AI-powered daily digest application. Define what yo
 - **Real Source Links** — Every digest item links back to the original article from real publications (CNN, Reuters, Bloomberg, etc.)
 - **Clean, Zero-Noise UI** — Apple-inspired dark theme with glassmorphism, smooth animations, and premium typography.
 - **Simple Auth** — Username/password signup. No OAuth complexity.
-- **Local-First** — Runs on local SQLite by default. No cloud database needed for development.
+- **Vercel Ready** — Built specifically for serverless deployments using Turso cloud database.
 
 ## Tech Stack
 
@@ -21,10 +21,10 @@ Nexus Feed is a personalized AI-powered daily digest application. Define what yo
 |---|---|
 | **Framework** | Next.js 16 (App Router, Turbopack) |
 | **Auth** | Custom session management (SHA-256 token hashing, secure cookies) |
-| **Database** | SQLite (local via libSQL) / Turso (production) |
+| **Database** | Turso (libSQL) |
 | **ORM** | Drizzle ORM |
 | **AI Models** | OpenAI GPT-4o-mini (fast ops) + GPT-4o (summarization) |
-| **Web Search** | Tavily API (optional — GPT fallback if not configured) |
+| **Web Search** | Tavily API |
 | **Styling** | Vanilla CSS with Apple-inspired design system |
 
 ## Getting Started
@@ -63,10 +63,10 @@ Open [http://localhost:3000](http://localhost:3000) to see the app.
 | Variable | Required | Description |
 |---|---|---|
 | `OPENAI_API_KEY` | ✅ Yes | OpenAI API key for topic generation and digest summarization |
-| `TAVILY_API_KEY` | ❌ Optional | Tavily API key for real-time web search. If not set, GPT generates digests from its knowledge |
-| `TURSO_DATABASE_URL` | ❌ Optional | Defaults to `file:local.db` for local SQLite |
-| `TURSO_AUTH_TOKEN` | ❌ Optional | Only needed if using remote Turso database |
-| `CRON_SECRET` | ❌ Optional | Secret for the daily cron endpoint (for production) |
+| `TAVILY_API_KEY` | ✅ Yes | Tavily API key for real-time web search |
+| `TURSO_DATABASE_URL` | ✅ Yes | Your Turso DB URL (e.g. libsql://nexus-feed-user.turso.io) |
+| `TURSO_AUTH_TOKEN` | ✅ Yes | Your Turso Auth Token |
+| `CRON_SECRET` | ✅ Yes | Secret for the daily cron endpoint (for Vercel) |
 
 ## Project Structure
 
