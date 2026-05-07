@@ -1,4 +1,5 @@
 import OpenAI from "openai";
+import { searchTopic, formatSearchResultsForLLM } from "./tavily";
 
 let _openai: OpenAI | null = null;
 
@@ -28,73 +29,23 @@ function setCache(key: string, data: unknown, ttlMs: number) {
   cache.set(key, { data, expiry: Date.now() + ttlMs });
 }
 
-// ─── Trending Topics ────────────────────────────────
+// ─── Trending Topics (Dynamic via Tavily) ─────────────
 export async function generateTrendingTopics(): Promise<string[]> {
   const today = new Date().toISOString().split("T")[0];
-  const cacheKey = `trending-${today}`;
+  const cacheKey = `trending-live-${today}`;
 
   const cached = getCached<string[]>(cacheKey);
   if (cached) return cached;
 
   try {
-    const response = await getOpenAI().chat.completions.create({
-      model: "gpt-4o-mini",
-      response_format: { type: "json_object" },
-      messages: [
-        {
-          role: "system",
-          content: "You are a helpful assistant that returns only valid JSON.",
-        },
-        {
-          role: "user",
-          content: `Today is ${today}. Generate 10 globally trending topics right now (simulate what's trending on Google Trends, X, or LinkedIn today). Mix highly relevant current events (tech, geopolitics, markets) with general global interests. Make them specific enough to be interesting, but broad enough to have sub-topics.\n\nReturn exactly this format:\n{ "topics": ["Trending Topic 1", "Trending Topic 2", ...] }\n\nReturn only the JSON. No explanation.`,
-        },
-      ],
-      temperature: 0.8,
-      max_tokens: 300,
-    });
-
-    const content = response.choices[0]?.message?.content || "{}";
-    const parsed = JSON.parse(content);
-    const topics = parsed.topics || [];
-
-    if (topics.length > 0) {
-      setCache(cacheKey, topics, 24 * 60 * 60 * 1000); // 24h
+    let context = "";
+    if (process.env.TAVILY_API_KEY && process.env.TAVILY_API_KEY !== "dummy") {
+      const results = await searchTopic(`top global news and trending topics today ${today}`);
+      context = formatSearchResultsForLLM(results);
     }
-    return topics;
-  } catch (error) {
-    console.error("Failed to generate trending topics:", error);
-    // Fallback topics
-    return [
-      "Artificial Intelligence",
-      "Geopolitics",
-      "Climate & Environment",
-      "Finance & Markets",
-      "Space Exploration",
-      "Health & Medicine",
-      "Sports",
-      "Travel",
-      "Consumer Tech",
-      "Energy",
-      "Culture & Society",
-      "Startups & Business",
-    ];
-  }
-}
 
-// ─── Topic Expansion ────────────────────────────────
-export async function expandTopic(
-  topic: string,
-  breadcrumb: string,
-  depth: number
-): Promise<string[]> {
-  const cacheKey = `expand-${breadcrumb}-${topic}`;
-  const cached = getCached<string[]>(cacheKey);
-  if (cached) return cached;
-
-  try {
     const response = await getOpenAI().chat.completions.create({
-      model: "gpt-4o-mini",
+      model: "gpt-4o",
       response_format: { type: "json_object" },
       messages: [
         {
@@ -103,7 +54,7 @@ export async function expandTopic(
         },
         {
           role: "user",
-          content: `Given the interest topic "${topic}" (which sits at path: "${breadcrumb}"), generate 6-8 correlated, related sub-topics or trending angles that a person might want to explore further. Go specific enough to be genuinely useful. If it's a broad topic, break it down into its most interesting current components or related fields. Current depth: ${depth}.\n\nReturn:\n{ "subTopics": ["Correlated Topic 1", "Correlated Topic 2", ...] }\n\nReturn only the JSON. No explanation.`,
+          content: `Today is ${today}. Generate 10 globally trending topics right now based on real current events. Make them specific enough to be interesting, but broad enough to have sub-topics. Mix highly relevant current events (tech, geopolitics, markets) with general global interests.\n\n${context ? `Use the following live news context to inform your choices:\n${context}\n\n` : ''}Return exactly this format:\n{ "topics": ["Trending Topic 1", "Trending Topic 2", ...] }\n\nReturn only the JSON. No explanation.`,
         },
       ],
       temperature: 0.7,
@@ -112,12 +63,51 @@ export async function expandTopic(
 
     const content = response.choices[0]?.message?.content || "{}";
     const parsed = JSON.parse(content);
-    const subTopics = parsed.subTopics || [];
+    const topics = parsed.topics || [];
 
-    setCache(cacheKey, subTopics, 6 * 60 * 60 * 1000); // 6h
-    return subTopics;
+    if (topics.length > 0) {
+      setCache(cacheKey, topics, 30 * 60 * 1000); // 30m cache for live feeling
+    }
+    return topics;
   } catch (error) {
-    console.error("Failed to expand topic:", error);
+    console.error("Failed to generate trending topics:", error);
+    return [
+      "Artificial Intelligence", "Geopolitics", "Climate & Environment", "Finance & Markets",
+      "Space Exploration", "Health & Medicine", "Sports", "Travel", "Consumer Tech", "Culture"
+    ];
+  }
+}
+
+// ─── Correlated Topic Generation ────────────────────
+export async function generateCorrelatedTopics(
+  selectedInterests: string[]
+): Promise<string[]> {
+  if (selectedInterests.length === 0) return generateTrendingTopics();
+
+  try {
+    const interestsList = selectedInterests.join(", ");
+    const response = await getOpenAI().chat.completions.create({
+      model: "gpt-4o",
+      response_format: { type: "json_object" },
+      messages: [
+        {
+          role: "system",
+          content: "You are a world-class recommendation engine that returns only valid JSON.",
+        },
+        {
+          role: "user",
+          content: `The user has shown interest in the following topics: [${interestsList}].\n\nGenerate exactly 10 highly correlated, fascinating topics they might also want to explore. Do not just list generic sub-topics; make lateral leaps, connect ideas, and suggest specific current fields related to their interests (e.g., if they selected SpaceX, suggest 'Reusable Rockets', 'Mars Colonization', 'Asteroid Mining').\n\nReturn exactly this format:\n{ "topics": ["Correlated Topic 1", "Correlated Topic 2", ...] }\n\nReturn only the JSON. No explanation.`,
+        },
+      ],
+      temperature: 0.8,
+      max_tokens: 400,
+    });
+
+    const content = response.choices[0]?.message?.content || "{}";
+    const parsed = JSON.parse(content);
+    return parsed.topics || [];
+  } catch (error) {
+    console.error("Failed to generate correlated topics:", error);
     return [];
   }
 }

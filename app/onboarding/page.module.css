@@ -15,157 +15,127 @@
   animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
+/* ─── Selected Area ─── */
+.selectedArea {
+  margin-bottom: 24px;
+  animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.05s both;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+}
+
+.selectedChips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  min-height: 40px;
+}
+
+.selectedChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: var(--gradient-accent);
+  color: white;
+  border-radius: 999px;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  cursor: pointer;
+  animation: fadeInScale 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  box-shadow: 0 4px 12px rgba(10, 132, 255, 0.3);
+  transition: all 0.2s ease;
+}
+
+.selectedChip:hover {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 6px 16px rgba(10, 132, 255, 0.4);
+}
+
+.selectedChip svg {
+  opacity: 0.7;
+  transition: opacity 0.2s ease;
+}
+
+.selectedChip:hover svg {
+  opacity: 1;
+}
+
 /* ─── Custom Input ─── */
 .customInput {
   display: flex;
   gap: 8px;
-  margin-bottom: 24px;
-  animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.1s backwards;
-}
-
-/* ─── Counter ─── */
-.counter {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 24px;
-  animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.15s backwards;
-}
-
-.counterBar {
-  flex: 1;
-  height: 4px;
-  background: rgba(255, 255, 255, 0.06);
-  border-radius: 2px;
-  overflow: hidden;
-}
-
-.counterFill {
-  height: 100%;
-  background: var(--gradient-accent);
-  border-radius: 2px;
-  transition: width 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-/* ─── Tree ─── */
-.treeContainer {
   margin-bottom: 32px;
+  animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.1s both;
 }
 
-.treeNode {
-  animation: fadeInUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) backwards;
+/* ─── Recommendations Area ─── */
+.recommendationsArea {
+  margin-bottom: 32px;
+  animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.15s both;
 }
 
-.nodeRow {
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 12px;
+}
+
+.recCard {
   display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 10px 12px;
-  border-radius: 12px;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 16px;
+  background: var(--bg-glass);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  text-align: left;
   cursor: pointer;
-  transition: all 0.2s ease;
-  margin-bottom: 2px;
-}
-
-.nodeRow:hover {
-  background: rgba(255, 255, 255, 0.04);
-}
-
-.nodeSelected {
-  background: rgba(10, 132, 255, 0.08) !important;
-  border: 1px solid rgba(10, 132, 255, 0.2);
-}
-
-.expandBtn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 28px;
-  height: 28px;
-  border: none;
-  background: rgba(255, 255, 255, 0.06);
-  border-radius: 8px;
-  color: var(--text-secondary);
-  cursor: pointer;
-  transition: all 0.2s ease;
-  flex-shrink: 0;
-}
-
-.expandBtn:hover {
-  background: rgba(255, 255, 255, 0.12);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   color: var(--text-primary);
+  backdrop-filter: blur(20px);
 }
 
-.nodeLabel {
-  flex: 1;
-  font-size: 0.9375rem;
-  font-weight: 500;
-  color: var(--text-primary);
-  cursor: pointer;
+.recCard:hover:not(:disabled) {
+  background: var(--bg-glass-hover);
+  border-color: var(--border-medium);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
 }
 
-.depthChip {
-  font-size: 0.6875rem;
-  font-weight: 600;
-  padding: 2px 8px;
-  border-radius: 999px;
-  background: rgba(191, 90, 242, 0.12);
-  color: var(--accent-purple);
-}
-
-.selectBtn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 28px;
-  height: 28px;
-  border: none;
-  background: transparent;
-  color: var(--text-tertiary);
-  cursor: pointer;
-  transition: all 0.2s ease;
-  flex-shrink: 0;
-  border-radius: 50%;
-}
-
-.selectBtn:hover:not(:disabled) {
-  color: var(--accent-blue);
-  background: rgba(10, 132, 255, 0.1);
-}
-
-.selectActive {
-  color: var(--accent-blue) !important;
-  background: rgba(10, 132, 255, 0.15) !important;
-}
-
-.selectBtn:disabled {
-  opacity: 0.3;
+.recCard:disabled {
+  opacity: 0.5;
   cursor: not-allowed;
 }
 
-.childrenWrapper {
-  padding-left: 16px;
-  border-left: 1px solid rgba(255, 255, 255, 0.06);
-  margin-left: 25px;
-  overflow: hidden;
-  animation: slideDown 0.3s ease forwards;
-}
-
-/* ─── Spinner ─── */
-.spinner {
-  animation: spin-slow 0.8s linear infinite;
-}
-
-/* ─── Loading ─── */
-.loadingGrid {
+.cardIcon {
   display: flex;
-  flex-direction: column;
-  gap: 8px;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text-secondary);
+  flex-shrink: 0;
+  transition: all 0.2s ease;
 }
 
-.skeletonCard {
-  height: 48px;
-  border-radius: 12px;
+.recCard:hover:not(:disabled) .cardIcon {
+  background: var(--gradient-accent);
+  color: white;
+}
+
+.cardText {
+  font-size: 0.9375rem;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+.cardSkeleton {
+  height: 70px;
+  border-radius: var(--radius-md);
 }
 
 /* ─── Save Bar ─── */
