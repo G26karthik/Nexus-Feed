@@ -18,10 +18,20 @@ export interface SearchResult {
 
 export async function searchTopic(query: string): Promise<SearchResult[]> {
   try {
-    const response = await getTavily().search(query, {
+    let response = await getTavily().search(query, {
       maxResults: 5,
       searchDepth: "basic",
+      days: 1,
     });
+
+    // Fallback to 3 days if no results from the last 24 hours
+    if (!response.results || response.results.length === 0) {
+      response = await getTavily().search(query, {
+        maxResults: 5,
+        searchDepth: "basic",
+        days: 3,
+      });
+    }
 
     return (response.results || []).map((r: { title: string; url: string; content: string }) => ({
       title: r.title,
