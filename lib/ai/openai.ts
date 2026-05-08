@@ -12,8 +12,25 @@ function getOpenAI(): OpenAI {
   return _openai;
 }
 
+function hasOpenAIKey(): boolean {
+  return !!process.env.OPENAI_API_KEY && process.env.OPENAI_API_KEY !== "dummy-key-for-build";
+}
+
 // ─── In-memory cache ────────────────────────────────
 const cache = new Map<string, { data: unknown; expiry: number }>();
+
+const defaultTopics = [
+  "Artificial Intelligence",
+  "Geopolitics",
+  "Climate & Environment",
+  "Finance & Markets",
+  "Space Exploration",
+  "Health & Medicine",
+  "Sports",
+  "Travel",
+  "Consumer Tech",
+  "Culture",
+];
 
 function getCached<T>(key: string): T | null {
   const entry = cache.get(key);
@@ -67,23 +84,21 @@ export async function generateTrendingTopics(): Promise<string[]> {
         },
       ],
       temperature: 0.7,
-      max_tokens: 400,
+      max_completion_tokens: 400,
     });
 
     const content = response.choices[0]?.message?.content || "{}";
     const parsed = safeJsonParse(content, { topics: [] });
-    const topics = parsed.topics || [];
+    const topics = Array.isArray(parsed.topics) ? parsed.topics : [];
 
     if (topics.length > 0) {
       setCache(cacheKey, topics, 30 * 60 * 1000); // 30m cache for live feeling
+      return topics;
     }
-    return topics;
+    return defaultTopics;
   } catch (error) {
     console.error("Failed to generate trending topics:", error);
-    return [
-      "Artificial Intelligence", "Geopolitics", "Climate & Environment", "Finance & Markets",
-      "Space Exploration", "Health & Medicine", "Sports", "Travel", "Consumer Tech", "Culture"
-    ];
+    return defaultTopics;
   }
 }
 
@@ -92,6 +107,7 @@ export async function generateCorrelatedTopics(
   selectedInterests: string[]
 ): Promise<string[]> {
   if (selectedInterests.length === 0) return generateTrendingTopics();
+  if (!hasOpenAIKey()) return generateTrendingTopics();
 
   try {
     const interestsList = selectedInterests.join(", ");
@@ -109,15 +125,16 @@ export async function generateCorrelatedTopics(
         },
       ],
       temperature: 0.8,
-      max_tokens: 400,
+      max_completion_tokens: 400,
     });
 
     const content = response.choices[0]?.message?.content || "{}";
     const parsed = safeJsonParse(content, { topics: [] });
-    return parsed.topics || [];
+    const topics = Array.isArray(parsed.topics) ? parsed.topics : [];
+    return topics.length > 0 ? topics : generateTrendingTopics();
   } catch (error) {
     console.error("Failed to generate correlated topics:", error);
-    return [];
+    return generateTrendingTopics();
   }
 }
 
@@ -142,7 +159,7 @@ export async function generateSearchQueries(
         },
       ],
       temperature: 0.6,
-      max_tokens: 200,
+      max_completion_tokens: 200,
     });
 
     const content = response.choices[0]?.message?.content || "{}";
@@ -185,7 +202,7 @@ export async function summarizeDigest(
         },
       ],
       temperature: 0.3,
-      max_tokens: 1500,
+      max_completion_tokens: 1500,
     });
 
     const content = response.choices[0]?.message?.content || "{}";
@@ -219,7 +236,7 @@ export async function generateDigestWithoutSearch(
         },
       ],
       temperature: 0.5,
-      max_tokens: 1200,
+      max_completion_tokens: 1200,
     });
 
     const content = response.choices[0]?.message?.content || "{}";
