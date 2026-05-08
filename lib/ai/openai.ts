@@ -54,7 +54,7 @@ export async function generateTrendingTopics(): Promise<string[]> {
         },
         {
           role: "user",
-          content: `Today is ${today}. Generate 10 globally trending topics right now based on real current events. Make them specific enough to be interesting, but broad enough to have sub-topics. Mix highly relevant current events (tech, geopolitics, markets) with general global interests.\n\n${context ? `Use the following live news context to inform your choices:\n${context}\n\n` : ''}Return exactly this format:\n{ "topics": ["Trending Topic 1", "Trending Topic 2", ...] }\n\nReturn only the JSON. No explanation.`,
+          content: `Today is ${today}. Generate 10 globally trending topics right now based on real current events. Make them specific enough to be interesting, but broad enough to have sub-topics. Mix highly relevant current events (tech, geopolitics, markets) with general global interests.\n\n${context ? `Use the following live news context to inform your choices:\n${context}\n\n` : ''}First, provide a brief reasoning for your choices. Then, provide the topics.\nReturn exactly this format:\n{\n  "reasoning": "your thought process",\n  "topics": ["Trending Topic 1", "Trending Topic 2", ...]\n}\n\nReturn only the JSON. No explanation outside JSON.`,
         },
       ],
       temperature: 0.7,
@@ -96,7 +96,7 @@ export async function generateCorrelatedTopics(
         },
         {
           role: "user",
-          content: `The user has shown interest in the following topics: [${interestsList}].\n\nGenerate exactly 10 highly correlated, fascinating topics they might also want to explore. Do not just list generic sub-topics; make lateral leaps, connect ideas, and suggest specific current fields related to their interests (e.g., if they selected SpaceX, suggest 'Reusable Rockets', 'Mars Colonization', 'Asteroid Mining').\n\nReturn exactly this format:\n{ "topics": ["Correlated Topic 1", "Correlated Topic 2", ...] }\n\nReturn only the JSON. No explanation.`,
+          content: `The user has shown interest in the following topics: [${interestsList}].\n\nGenerate exactly 10 highly correlated, fascinating topics they might also want to explore. Do not just list generic sub-topics; make lateral leaps, connect ideas, and suggest specific current fields related to their interests (e.g., if they selected SpaceX, suggest 'Reusable Rockets', 'Mars Colonization', 'Asteroid Mining').\n\nFirst, provide a brief reasoning for your lateral leaps. Return exactly this format:\n{\n  "reasoning": "your thought process",\n  "topics": ["Correlated Topic 1", "Correlated Topic 2", ...]\n}\n\nReturn only the JSON. No explanation outside JSON.`,
         },
       ],
       temperature: 0.8,
@@ -129,7 +129,7 @@ export async function generateSearchQueries(
         },
         {
           role: "user",
-          content: `Generate 3 search queries to find today's (${today}) most important news and developments about: "${breadcrumb}"\n\nQueries should be specific, current, and likely to return quality journalism or expert analysis — not social media or forums.\n\nReturn:\n{ "queries": ["query1", "query2", "query3"] }\n\nReturn only the JSON.`,
+          content: `Generate 3 search queries to find today's (${today}) most important news and developments about: "${breadcrumb}"\n\nQueries should be specific, current, and likely to return quality journalism or expert analysis — not social media or forums.\n\nFirst, provide a brief reasoning for your query choices. Return exactly this format:\n{\n  "reasoning": "your thought process",\n  "queries": ["query1", "query2", "query3"]\n}\n\nReturn only the JSON.`,
         },
       ],
       temperature: 0.6,
@@ -172,7 +172,7 @@ export async function summarizeDigest(
         },
         {
           role: "user",
-          content: `Topic: "${breadcrumb}"\nDate: ${today}\n\nHere are search results from today:\n${searchResults}\n\nExtract the 3-5 most important, distinct developments from these results. Skip duplicates, skip low-quality sources.\n\nFor each item:\n- title: headline (max 12 words)\n- summary: exactly 2 sentences. Sentence 1: what happened. Sentence 2: why it matters.\n- sourceUrl: the URL\n- sourceName: publication name\n- relevanceScore: 0-100 how relevant to the topic\n\nReturn:\n{\n  "items": [\n    {\n      "title": "...",\n      "summary": "...",\n      "sourceUrl": "...",\n      "sourceName": "...",\n      "relevanceScore": 87\n    }\n  ]\n}\n\nReturn only the JSON.`,
+          content: `Topic: "${breadcrumb}"\nDate: ${today}\n\nHere are search results from today:\n${searchResults}\n\nExtract the 3-5 most important, distinct developments from these results. Skip duplicates, skip low-quality sources.\n\nFirst, provide a brief reasoning for which items you selected and why. Then, for each item:\n- title: headline (max 12 words)\n- summary: exactly 2 sentences. Sentence 1: what happened. Sentence 2: why it matters.\n- sourceUrl: the URL\n- sourceName: publication name\n- relevanceScore: 0-100 how relevant to the topic\n\nReturn:\n{\n  "reasoning": "your thought process",\n  "items": [\n    {\n      "title": "...",\n      "summary": "...",\n      "sourceUrl": "...",\n      "sourceName": "...",\n      "relevanceScore": 87\n    }\n  ]\n}\n\nReturn only the JSON.`,
         },
       ],
       temperature: 0.3,
@@ -206,7 +206,7 @@ export async function generateDigestWithoutSearch(
         },
         {
           role: "user",
-          content: `Topic: "${breadcrumb}"\nDate: ${today}\n\nGenerate 3-5 of the most important recent developments, trends, or news about this topic. Use your training knowledge to create informative summaries.\n\nFor each item:\n- title: headline (max 12 words)\n- summary: exactly 2 sentences. Sentence 1: what happened or the key insight. Sentence 2: why it matters.\n- sourceUrl: "#" (no source available)\n- sourceName: "AI Summary"\n- relevanceScore: 0-100 how relevant to the topic\n\nReturn:\n{\n  "items": [\n    {\n      "title": "...",\n      "summary": "...",\n      "sourceUrl": "#",\n      "sourceName": "AI Summary",\n      "relevanceScore": 87\n    }\n  ]\n}\n\nReturn only the JSON.`,
+          content: `Topic: "${breadcrumb}"\nDate: ${today}\n\nGenerate 3-5 of the most important recent developments, trends, or news about this topic. Use your training knowledge to create informative summaries.\n\nFirst, provide a brief reasoning for your selections. Then, for each item:\n- title: headline (max 12 words)\n- summary: exactly 2 sentences. Sentence 1: what happened or the key insight. Sentence 2: why it matters.\n- sourceUrl: "#" (no source available)\n- sourceName: "AI Summary"\n- relevanceScore: 0-100 how relevant to the topic\n\nReturn:\n{\n  "reasoning": "your thought process",\n  "items": [\n    {\n      "title": "...",\n      "summary": "...",\n      "sourceUrl": "#",\n      "sourceName": "AI Summary",\n      "relevanceScore": 87\n    }\n  ]\n}\n\nReturn only the JSON.`,
         },
       ],
       temperature: 0.5,
