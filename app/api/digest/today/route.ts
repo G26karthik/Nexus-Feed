@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { getCurrentSession } from "@/lib/auth/session";
 import { db } from "@/lib/db";
 import { digests, digestItems, interestNodes } from "@/lib/db/schema";
-import { eq, and } from "drizzle-orm";
+import { eq, and, inArray } from "drizzle-orm";
 import { generateDigestForNode } from "@/lib/ai/pipeline";
 
 export async function GET() {
@@ -21,44 +21,49 @@ export async function GET() {
       and(eq(interestNodes.userId, user.id), eq(interestNodes.isLeaf, true))
     );
 
-  const digestsResult = [];
+  // Fetch all existing digests for the user today
+  let existingDigests = await db
+    .select()
+    .from(digests)
+    .where(and(eq(digests.userId, user.id), eq(digests.date, today)));
 
-  for (const node of leaves) {
-    // Check if digest exists for today
-    let nodeDigest = await db
+  // Identify nodes that need digest generation
+  const missingNodes = leaves.filter(
+    (node) => !existingDigests.find((d) => d.nodeId === node.id)
+  );
+
+  // Parallel generation of missing digests
+  if (missingNodes.length > 0) {
+    await Promise.allSettled(
+      missingNodes.map((node) =>
+        generateDigestForNode(user.id, node.id, node.breadcrumb)
+      )
+    );
+
+    // Re-fetch all digests after generation
+    existingDigests = await db
       .select()
       .from(digests)
-      .where(and(eq(digests.nodeId, node.id), eq(digests.date, today)))
-      .limit(1);
+      .where(and(eq(digests.userId, user.id), eq(digests.date, today)));
+  }
 
-    // On-demand generation if missing
-    if (nodeDigest.length === 0) {
-      await generateDigestForNode(user.id, node.id, node.breadcrumb);
-      nodeDigest = await db
-        .select()
-        .from(digests)
-        .where(and(eq(digests.nodeId, node.id), eq(digests.date, today)))
-        .limit(1);
-    }
+  // Fetch all digest items in one query to avoid N+1
+  let allItems: typeof digestItems.$inferSelect[] = [];
+  if (existingDigests.length > 0) {
+    const digestIds = existingDigests.map((d) => d.id);
+    allItems = await db
+      .select()
+      .from(digestItems)
+      .where(inArray(digestItems.digestId, digestIds));
+  }
 
-    let items: {
-      id: string;
-      digestId: string;
-      title: string;
-      summary: string;
-      sourceUrl: string;
-      sourceName: string | null;
-      relevanceScore: number | null;
-      position: number;
-    }[] = [];
-    if (nodeDigest.length > 0) {
-      items = await db
-        .select()
-        .from(digestItems)
-        .where(eq(digestItems.digestId, nodeDigest[0].id));
-    }
+  const digestsResult = leaves.map((node) => {
+    const nodeDigest = existingDigests.find((d) => d.nodeId === node.id);
+    const items = nodeDigest
+      ? allItems.filter((item) => item.digestId === nodeDigest.id)
+      : [];
 
-    digestsResult.push({
+    return {
       nodeId: node.id,
       label: node.label,
       breadcrumb: node.breadcrumb,
@@ -71,9 +76,9 @@ export async function GET() {
           sourceName: item.sourceName,
           position: item.position,
         })),
-      generatedAt: nodeDigest[0]?.createdAt || null,
-    });
-  }
+      generatedAt: nodeDigest?.createdAt || null,
+    };
+  });
 
   return NextResponse.json({ date: today, digests: digestsResult });
 }

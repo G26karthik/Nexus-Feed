@@ -9,7 +9,7 @@ Nexus Feed is a personalized AI-powered daily digest application. Define what yo
 ## Features
 
 - **AI-Generated Dynamic Taxonomy** — Start with broad topics, and let the AI build highly-correlated lateral leaps. The system dynamically suggests specific interests based on your selections.
-- **Daily Digest Generation** — Every day, the system searches the web for your interests using Tavily, then summarizes the top developments using GPT-4o.
+- **Daily Digest Generation** — Every day, the system searches the web for your interests using Tavily, then summarizes the top developments using GPT-5.4.
 - **Prompt Engineering Harness** — Employs advanced Chain-of-Thought (CoT) JSON prompt engineering to force the model to reason step-by-step before selecting and summarizing articles, ensuring maximum relevance and zero hallucination.
 - **Real Source Links** — Every digest item links back to the original article from real publications (CNN, Reuters, Bloomberg, etc.)
 - **Clean, Zero-Noise UI** — Apple-inspired dark theme with glassmorphism, smooth animations, and premium typography.
@@ -24,7 +24,7 @@ Nexus Feed is a personalized AI-powered daily digest application. Define what yo
 | **Auth** | Custom session management (SHA-256 token hashing, secure cookies) |
 | **Database** | Turso (libSQL) |
 | **ORM** | Drizzle ORM |
-| **AI Models** | OpenAI GPT-4o-mini (fast ops) + GPT-4o (summarization) |
+| **AI Models** | OpenAI GPT-5.4 |
 | **Web Search** | Tavily API |
 | **Styling** | Vanilla CSS with Apple-inspired design system |
 
@@ -105,7 +105,7 @@ nexus-feed/
 
 1. **Sign Up** — Create an account with a username and password
 2. **Choose Interests** — AI generates 10 live global trending topics. Select topics to instantly trigger an AI recalculation of new, laterally correlated recommendations.
-3. **Get Your Digest** — The system generates precise search queries, searches the web via Tavily, and uses a Chain-of-Thought JSON harness with GPT-4o to extract and summarize findings into a clean daily digest.
+3. **Get Your Digest** — The system generates precise search queries, searches the web via Tavily, and uses a Chain-of-Thought JSON harness with GPT-5.4 to extract and summarize findings into a clean daily digest.
 4. **Daily Updates** — A cron job (configurable via Vercel) regenerates digests every morning at 6 AM UTC.
 
 ## Available Scripts

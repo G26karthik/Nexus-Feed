@@ -29,6 +29,15 @@ function setCache(key: string, data: unknown, ttlMs: number) {
   cache.set(key, { data, expiry: Date.now() + ttlMs });
 }
 
+function safeJsonParse<T>(content: string, fallback: T): T {
+  try {
+    return JSON.parse(content) as T;
+  } catch (error) {
+    console.error("Failed to parse JSON safely:", error);
+    return fallback;
+  }
+}
+
 // ─── Trending Topics (Dynamic via Tavily) ─────────────
 export async function generateTrendingTopics(): Promise<string[]> {
   const today = new Date().toISOString().split("T")[0];
@@ -45,7 +54,7 @@ export async function generateTrendingTopics(): Promise<string[]> {
     }
 
     const response = await getOpenAI().chat.completions.create({
-      model: "gpt-4o",
+      model: "gpt-5.4",
       response_format: { type: "json_object" },
       messages: [
         {
@@ -62,7 +71,7 @@ export async function generateTrendingTopics(): Promise<string[]> {
     });
 
     const content = response.choices[0]?.message?.content || "{}";
-    const parsed = JSON.parse(content);
+    const parsed = safeJsonParse(content, { topics: [] });
     const topics = parsed.topics || [];
 
     if (topics.length > 0) {
@@ -87,7 +96,7 @@ export async function generateCorrelatedTopics(
   try {
     const interestsList = selectedInterests.join(", ");
     const response = await getOpenAI().chat.completions.create({
-      model: "gpt-4o",
+      model: "gpt-5.4",
       response_format: { type: "json_object" },
       messages: [
         {
@@ -104,7 +113,7 @@ export async function generateCorrelatedTopics(
     });
 
     const content = response.choices[0]?.message?.content || "{}";
-    const parsed = JSON.parse(content);
+    const parsed = safeJsonParse(content, { topics: [] });
     return parsed.topics || [];
   } catch (error) {
     console.error("Failed to generate correlated topics:", error);
@@ -120,7 +129,7 @@ export async function generateSearchQueries(
 
   try {
     const response = await getOpenAI().chat.completions.create({
-      model: "gpt-4o-mini",
+      model: "gpt-5.4",
       response_format: { type: "json_object" },
       messages: [
         {
@@ -137,7 +146,7 @@ export async function generateSearchQueries(
     });
 
     const content = response.choices[0]?.message?.content || "{}";
-    const parsed = JSON.parse(content);
+    const parsed = safeJsonParse(content, { queries: [] });
     return parsed.queries || [];
   } catch (error) {
     console.error("Failed to generate search queries:", error);
@@ -162,7 +171,7 @@ export async function summarizeDigest(
 
   try {
     const response = await getOpenAI().chat.completions.create({
-      model: "gpt-4o",
+      model: "gpt-5.4",
       response_format: { type: "json_object" },
       messages: [
         {
@@ -180,7 +189,7 @@ export async function summarizeDigest(
     });
 
     const content = response.choices[0]?.message?.content || "{}";
-    const parsed = JSON.parse(content);
+    const parsed = safeJsonParse(content, { items: [] });
     return parsed.items || [];
   } catch (error) {
     console.error("Failed to summarize digest:", error);
@@ -196,7 +205,7 @@ export async function generateDigestWithoutSearch(
 
   try {
     const response = await getOpenAI().chat.completions.create({
-      model: "gpt-4o-mini",
+      model: "gpt-5.4",
       response_format: { type: "json_object" },
       messages: [
         {
@@ -214,7 +223,7 @@ export async function generateDigestWithoutSearch(
     });
 
     const content = response.choices[0]?.message?.content || "{}";
-    const parsed = JSON.parse(content);
+    const parsed = safeJsonParse(content, { items: [] });
     return parsed.items || [];
   } catch (error) {
     console.error("Failed to generate digest without search:", error);

@@ -112,7 +112,7 @@ export async function generateDigestsForUser(userId: string): Promise<void> {
       and(eq(interestNodes.userId, userId), eq(interestNodes.isLeaf, true))
     );
 
-  for (const node of leaves) {
-    await generateDigestForNode(userId, node.id, node.breadcrumb);
-  }
+  await Promise.allSettled(
+    leaves.map((node) => generateDigestForNode(userId, node.id, node.breadcrumb))
+  );
 }
