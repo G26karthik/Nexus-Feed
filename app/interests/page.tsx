@@ -33,7 +33,7 @@ export default function EditInterestsPage() {
       }),
     ])
       .then(([interestsData, trendingData]) => {
-        const saved: string[] = (interestsData.interests || []).map((i: any) => i.label);
+        const saved: string[] = (interestsData.interests || []).map((i: { label: string }) => i.label);
         setSelectedInterests(saved);
 
         const trending: string[] = trendingData.topics || [];
@@ -125,10 +125,11 @@ export default function EditInterestsPage() {
         throw new Error(errData.error || `HTTP ${res.status} - Failed to save interests`);
       }
       
+      // eslint-disable-next-line react-hooks/immutability
       router.push("/dashboard");
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err);
-      setErrorMsg(err.message || "Failed to save interests.");
+      setErrorMsg(err instanceof Error ? err.message : "Failed to save interests.");
       setSaving(false);
     }
   };

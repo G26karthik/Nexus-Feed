@@ -103,10 +103,11 @@ export default function OnboardingPage() {
         throw new Error(errData.error || `HTTP ${res.status} - Failed to save interests`);
       }
       
+      // eslint-disable-next-line react-hooks/immutability
       router.push("/dashboard");
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err);
-      setErrorMsg(err.message || "Failed to save interests.");
+      setErrorMsg(err instanceof Error ? err.message : "Failed to save interests.");
       setSaving(false);
     }
   };
@@ -117,7 +118,7 @@ export default function OnboardingPage() {
         <div className={styles.header}>
           <h1 className="text-headline">What do you care about?</h1>
           <p className="text-body" style={{ marginTop: "8px" }}>
-            Select up to 10 interests. We'll instantly adapt our recommendations based on what you choose.
+            Select up to 10 interests. We&apos;ll instantly adapt our recommendations based on what you choose.
           </p>
         </div>
 
