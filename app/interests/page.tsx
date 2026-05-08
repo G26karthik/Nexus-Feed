@@ -57,7 +57,7 @@ export default function EditInterestsPage() {
   }, [router]);
 
   // Fetch new recommendations based on selections
-  const fetchRecommendations = async (currentSelections: string[]) => {
+  async function fetchRecommendations(currentSelections: string[]) {
     setLoading(true);
     try {
       const res = await fetch("/api/topics/recommend", {
@@ -125,7 +125,6 @@ export default function EditInterestsPage() {
         throw new Error(errData.error || `HTTP ${res.status} - Failed to save interests`);
       }
       
-      // eslint-disable-next-line react-hooks/immutability
       router.push("/dashboard");
     } catch (err: unknown) {
       console.error(err);
