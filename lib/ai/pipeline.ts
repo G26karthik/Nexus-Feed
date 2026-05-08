@@ -1,4 +1,4 @@
-import { db } from "@/lib/db";
+import { getDb } from "@/lib/db";
 import { digests, digestItems, interestNodes } from "@/lib/db/schema";
 import { eq, and } from "drizzle-orm";
 import { generateSearchQueries, summarizeDigest, generateDigestWithoutSearch } from "./openai";
@@ -22,6 +22,7 @@ export async function generateDigestForNode(
   breadcrumb: string
 ): Promise<void> {
   const today = getToday();
+  const db = getDb();
 
   // Check if digest already exists (idempotent)
   const existing = await db
@@ -105,6 +106,7 @@ export async function generateDigestForNode(
 }
 
 export async function generateDigestsForUser(userId: string): Promise<void> {
+  const db = getDb();
   const leaves = await db
     .select()
     .from(interestNodes)

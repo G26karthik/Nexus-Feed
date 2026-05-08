@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/lib/db";
+import { getDb } from "@/lib/db";
 import { users } from "@/lib/db/schema";
 import { generateDigestsForUser } from "@/lib/ai/pipeline";
 
@@ -11,6 +11,7 @@ export async function POST(request: NextRequest) {
   }
 
   try {
+    const db = getDb();
     const allUsers = await db.select().from(users);
 
     let processed = 0;

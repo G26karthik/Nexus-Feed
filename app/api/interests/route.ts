@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getCurrentSession } from "@/lib/auth/session";
-import { db } from "@/lib/db";
+import { getDb } from "@/lib/db";
 import { interestNodes } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 
@@ -12,6 +12,7 @@ function generateId(): string {
 
 // GET /api/interests — returns user's saved interests
 export async function GET() {
+  const db = getDb();
   const { user } = await getCurrentSession();
   if (!user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -34,6 +35,7 @@ export async function GET() {
 
 // POST /api/interests — save user's selected leaf nodes
 export async function POST(request: NextRequest) {
+  const db = getDb();
   const { user } = await getCurrentSession();
   if (!user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

@@ -1,4 +1,4 @@
-import { db } from "@/lib/db";
+import { getDb } from "@/lib/db";
 import { sessions, users } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 import { cookies } from "next/headers";
@@ -40,6 +40,7 @@ export async function createSession(
   token: string,
   userId: string
 ): Promise<Session> {
+  const db = getDb();
   const sessionId = encodeHexLowerCase(
     sha256(new TextEncoder().encode(token))
   );
@@ -59,6 +60,7 @@ export async function createSession(
 export async function validateSessionToken(
   token: string
 ): Promise<SessionValidationResult> {
+  const db = getDb();
   const sessionId = encodeHexLowerCase(
     sha256(new TextEncoder().encode(token))
   );
@@ -109,6 +111,7 @@ export async function validateSessionToken(
 }
 
 export async function invalidateSession(sessionId: string): Promise<void> {
+  const db = getDb();
   await db.delete(sessions).where(eq(sessions.id, sessionId));
 }
 

@@ -1,11 +1,12 @@
 import { NextResponse } from "next/server";
 import { getCurrentSession } from "@/lib/auth/session";
-import { db } from "@/lib/db";
+import { getDb } from "@/lib/db";
 import { digests, digestItems, interestNodes } from "@/lib/db/schema";
 import { eq, and, inArray } from "drizzle-orm";
 import { generateDigestForNode } from "@/lib/ai/pipeline";
 
 export async function GET() {
+  const db = getDb();
   const { user } = await getCurrentSession();
   if (!user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

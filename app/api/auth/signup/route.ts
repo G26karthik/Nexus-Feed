@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/lib/db";
+import { getDb } from "@/lib/db";
 import { users } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 import {
@@ -17,6 +17,7 @@ function generateId(): string {
 
 export async function POST(request: NextRequest) {
   try {
+    const db = getDb();
     const { username, password, displayName } = await request.json();
 
     if (!username || !password) {
